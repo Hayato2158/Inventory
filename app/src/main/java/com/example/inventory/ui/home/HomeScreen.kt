@@ -39,6 +39,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -53,6 +54,9 @@ import com.example.inventory.data.Item
 import com.example.inventory.ui.item.formatedPrice
 import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.theme.InventoryTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.inventory.ui.AppViewModelProvider
+import androidx.compose.runtime.getValue
 
 object HomeDestination : NavigationDestination {
     override val route = "home"
@@ -67,9 +71,12 @@ object HomeDestination : NavigationDestination {
 fun HomeScreen(
     navigateToItemEntry: () -> Unit,
     navigateToItemUpdate: (Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
+)
+    {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val homeUiState by viewModel.homeUiState.collectAsState()
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -84,7 +91,9 @@ fun HomeScreen(
             FloatingActionButton(
                 onClick = navigateToItemEntry,
                 shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
+                modifier = Modifier
+                    .padding(dimensionResource(id = R.dimen.padding_large)
+                )
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -94,7 +103,7 @@ fun HomeScreen(
         },
     ) { innerPadding ->
         HomeBody(
-            itemList = listOf(),
+            itemList = homeUiState.itemList,
             onItemClick = navigateToItemUpdate,
             modifier = modifier.fillMaxSize(),
             contentPadding = innerPadding,
